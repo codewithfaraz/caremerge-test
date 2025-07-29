@@ -51,6 +51,7 @@ const server = http.createServer((req, res) => {
     try {
       promises = queries.map(fetchTitles);
     } catch (err) {
+      res.statusCode(500);
       res.end("Internal Server error");
     }
     //settling promises
@@ -73,9 +74,13 @@ const server = http.createServer((req, res) => {
       })
       .catch((err) => {
         console.log(err);
+        res.statusCode(500);
         res.end("Internal Server error");
         console.log("error");
       });
+  } else {
+    res.writeHead(400);
+    res.end("Route Not Found");
   }
 });
 

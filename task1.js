@@ -42,6 +42,7 @@ const server = http.createServer((req, res) => {
           console.log("@232", err);
         });
       } catch (err) {
+        res.statusCode(500);
         res.end("Internal Server error");
       }
     });
