@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start:task1": "nodemon task1.js"
   },
   "type": "module",
   "keywords": [],
