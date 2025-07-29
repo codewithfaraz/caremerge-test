@@ -25,7 +25,7 @@ const server = http.createServer((req, res) => {
 
       let data = "";
       //fetching title with https
-      https
+      const request = https
         .get(query, (res) => {
           res.on("data", (chunk) => (data += chunk));
           res.on("end", () => {
