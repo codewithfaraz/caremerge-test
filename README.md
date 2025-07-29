@@ -1,19 +1,19 @@
-### clone repo
+### Clone repo
 
 https://github.com/codewithfaraz/caremerge-test.git
 
-## install dependencies
+### install dependencies
 
-run npm i
+npm i
 
-## Run task 1
+### Run task 1
 
-run "run npm start:task1"
+npm run start:task1
 
-## Run task 2
+### Run task 2
 
-run "run npm start:task2"
+npm run start:task2
 
-## Run task 3
+### Run task 3
 
-run "run npm start:task3"
+npm run start:task3
