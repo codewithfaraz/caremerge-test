@@ -16,40 +16,59 @@ const server = http.createServer((req, res) => {
     <h1> Following are the titles of given websites: </h1>
     <ul>
     `;
-    async.each(
-      queries,
-      (query, callback) => {
-        let originalQuery = query;
-        if (query.includes("http://"))
-          query = query.replace("http://", "https://");
-        if (!query.startsWith("https://")) query = "https://" + query;
-        let data = "";
-        //fetching title with https
-        https
-          .get(query, (res) => {
+    try {
+      async.each(
+        queries,
+        (query, callback) => {
+          let isHandled = false;
+          let originalQuery = query;
+          if (query.includes("http://"))
+            query = query.replace("http://", "https://");
+          if (!query.startsWith("https://")) query = "https://" + query;
+          let data = "";
+          //fetching title with https
+          const request = https.get(query, (res) => {
             res.on("data", (chunk) => (data += chunk));
             res.on("end", () => {
-              const loadedHtml = cheerio.load(data);
-              const title = loadedHtml("title").text();
-              html += `<li>${originalQuery} - "${title}"</li>`;
-              console.log("@241", title);
-              callback();
+              if (!isHandled) {
+                const loadedHtml = cheerio.load(data);
+                const title = loadedHtml("title").text();
+                html += `<li>${originalQuery} - "${title}"</li>`;
+                console.log("@241", title);
+                isHandled = true;
+                callback();
+              }
             });
-          })
-          .on("error", (err) => {
-            html += `<li>${originalQuery} - "No Response"</li>`;
-            callback();
           });
-      },
-      () => {
-        html += `</ul>
+          request.on("error", (err) => {
+            if (!isHandled) {
+              isHandled = true;
+              html += `<li>${originalQuery} - "No Response"</li>`;
+              callback();
+            }
+          });
+          request.setTimeout(5000, () => {
+            if (!isHandled) {
+              html += `<li>${originalQuery} - "No Response(Timeout)"</li>`;
+              request.destroy();
+              isHandled = true;
+              callback();
+            }
+          });
+        },
+        () => {
+          html += `</ul>
       </body>
       </html>
       `;
-        res.writeHead(200, { "Content-Type": "text/html" });
-        res.end(html);
-      }
-    );
+          res.writeHead(200, { "Content-Type": "text/html" });
+          res.end(html);
+        }
+      );
+    } catch (err) {
+      res.writeHead(500);
+      res.end("Internal Server error");
+    }
   } else {
     res.writeHead(400);
     res.end("Route Not Found");

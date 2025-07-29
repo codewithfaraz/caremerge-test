@@ -2,7 +2,6 @@ import http from "http";
 import url from "url";
 import https from "https";
 import * as cheerio from "cheerio";
-
 ///creating server
 const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url, true);
@@ -22,11 +21,10 @@ const server = http.createServer((req, res) => {
       let originalQuery = query;
       if (query.includes("http://")) query.replace("http://", "https://");
       if (!query.startsWith("https://")) query = "https://" + query;
-
       let data = "";
       //fetching title with https
-      const request = https
-        .get(query, (res) => {
+      try {
+        const request = https.get(query, (res) => {
           res.on("data", (chunk) => (data += chunk));
           res.on("end", () => {
             const loadedHtml = cheerio.load(data);
@@ -36,13 +34,16 @@ const server = http.createServer((req, res) => {
             completed++;
             if (completed === length) sendResponse();
           });
-        })
-        .on("error", (err) => {
+        });
+        request.on("error", (err) => {
           html += `<li>${originalQuery} - "No Response"</li>`;
           completed++;
           if (completed === length) sendResponse();
           console.log("@232", err);
         });
+      } catch (err) {
+        res.end("Internal Server error");
+      }
     });
     function sendResponse() {
       if (completed === length) {

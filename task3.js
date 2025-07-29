@@ -2,6 +2,8 @@ import https from "https";
 import http from "http";
 import * as cheerio from "cheerio";
 import url from "url";
+
+//funtion to return promise for each website
 function fetchTitles(query) {
   return new Promise((resolve, reject) => {
     const originalQuery = query;
@@ -24,6 +26,7 @@ function fetchTitles(query) {
       console.log("@23", err);
       reject({ originalQuery, title: "No Response" });
     });
+    //5sec timeout
     request.setTimeout(5000, () => {
       request.destroy();
       reject({ originalQuery, title: "No Response(Timeout)" });
@@ -42,8 +45,15 @@ const server = http.createServer((req, res) => {
     <ul>
     `;
     let queries = parsedUrl.query.address;
+    //turning single query parameter to array for map function
     queries = Array.isArray(queries) ? queries : [queries];
-    const promises = queries.map(fetchTitles);
+    let promises;
+    try {
+      promises = queries.map(fetchTitles);
+    } catch (err) {
+      res.end("Internal Server error");
+    }
+    //settling promises
     Promise.allSettled(promises)
       .then((results) => {
         console.log("@49 here is completed");
@@ -68,6 +78,8 @@ const server = http.createServer((req, res) => {
       });
   }
 });
+
+//server listening
 server.listen(8000, () => {
   console.log("server is running on port 8000");
 });
